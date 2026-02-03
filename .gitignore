@@ -1,0 +1,26 @@
+# Build and dependency directories
+node_modules/
+dist/
+build/
+
+# Local databases
+*.db
+*.sqlite
+
+# User-specific or sensitive files
+.env
+.env.local
+
+# Project specific
+uploads/
+*.zip
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Workspace files
+.vscode/
+.idea/
+.gemini/
+.antigravity/
