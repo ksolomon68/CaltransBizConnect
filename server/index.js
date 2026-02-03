@@ -109,7 +109,7 @@ try {
 
     // 1. Health check handler
     const healthHandler = (req, res) => {
-        const { getDb } = require('./database');
+        const { getDb, getDbPath, checkDbFile } = require('./database');
         let dbStatus = 'ok';
         let detail = null;
         try { getDb(); } catch (e) { dbStatus = 'error'; detail = e.message; }
@@ -118,7 +118,12 @@ try {
         if (req.path.includes('/api/health')) {
             return res.json({
                 status: 'ok',
-                database: { status: dbStatus, detail: detail },
+                database: {
+                    status: dbStatus,
+                    detail: detail,
+                    path: getDbPath(),
+                    exists: checkDbFile()
+                },
                 uptime: process.uptime(),
                 timestamp: new Date().toISOString(),
                 env: {
@@ -135,6 +140,8 @@ try {
                 <p><strong>Status:</strong> Running</p>
                 <p><strong>URL Path:</strong> ${req.path}</p>
                 <p style="color: ${dbStatus === 'ok' ? 'green' : 'red'};"><strong>Database: ${dbStatus === 'ok' ? 'Connected' : 'Error: ' + detail}</strong></p>
+                <p><strong>Database Path:</strong> ${getDbPath()}</p>
+                <p><strong>Database File Exists:</strong> ${checkDbFile() ? 'Yes' : 'No'}</p>
                 <hr>
                 <p>Time: ${new Date().toISOString()}</p>
                 <p><small>Debug Info: Running in ${process.env.NODE_ENV || 'production'} mode</small></p>

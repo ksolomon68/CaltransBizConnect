@@ -101,11 +101,17 @@ router.post('/login', async (req, res) => {
         const match = user ? await bcrypt.compare(password, user.password_hash) : false;
 
         if (!user || !match) {
+            const { getDbPath, checkDbFile } = require('../database');
             console.warn(`CaltransBizConnect Auth Check: userFound=${!!user}, passwordMatch=${match} for ${email}`);
             return res.status(401).json({
                 success: false,
                 message: 'Invalid email or password',
-                debug: { found: !!user, match: match } // Temporary debug info
+                debug: {
+                    found: !!user,
+                    match: match,
+                    dbPath: getDbPath(),
+                    dbExists: checkDbFile()
+                }
             });
         }
 

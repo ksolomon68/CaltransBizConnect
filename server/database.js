@@ -214,6 +214,14 @@ function initDatabase() {
 module.exports = {
     getDb,
     initDatabase,
+    getDbPath: () => dbPath,
+    checkDbFile: () => {
+        try {
+            return fs.existsSync(dbPath);
+        } catch (e) {
+            return false;
+        }
+    },
     get lastError() { return lastError; },
     get db() { return db; } // Keep for backward compatibility where it might still be used
 };

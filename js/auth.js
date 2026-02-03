@@ -226,7 +226,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     .catch(error => {
                         let msg = error.message;
                         if (error.debug) {
-                            msg += ` (Debug: found=${error.debug.found}, match=${error.debug.match})`;
+                            msg += `\n\nDebug Info:\n- Found: ${error.debug.found}\n- Match: ${error.debug.match}`;
+                            if (error.debug.dbPath) msg += `\n- DB Path: ${error.debug.dbPath}`;
+                            if (error.debug.dbExists !== undefined) msg += `\n- DB Exists: ${error.debug.dbExists ? 'Yes' : 'No'}`;
                         }
                         showErrorMessage(msg, loginForm.parentElement);
                     });
