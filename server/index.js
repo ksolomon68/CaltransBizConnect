@@ -154,10 +154,10 @@ try {
     // This can be triggered by visiting https://caltransbizconnect.org/api/emergency-seed-sync
     app.get('/api/emergency-seed-sync', async (req, res) => {
         try {
-            console.log('CaltransBizConnect: Triggering emergency database seeding...');
-            const Database = require('better-sqlite3');
-            const bcrypt = require('bcryptjs');
             const { db } = require('./database');
+            const bcrypt = require('bcryptjs');
+            const path = require('path');
+            const dbFilePath = path.resolve(__dirname, 'data.db');
 
             const users = [
                 { email: 'ks@evobrand.net', password: 'Shadow01!', type: 'admin', name: 'Caltrans Admin' },
@@ -166,30 +166,40 @@ try {
 
             const results = [];
             for (const u of users) {
+                const email = u.email.toLowerCase().trim();
                 const hash = await bcrypt.hash(u.password, 10);
-                const exists = db.prepare('SELECT id FROM users WHERE email = ?').get(u.email);
+                const exists = db ? db.prepare('SELECT id FROM users WHERE email = ?').get(email) : null;
 
                 if (exists) {
                     db.prepare('UPDATE users SET password_hash = ?, type = ?, status = ? WHERE email = ?')
-                        .run(hash, u.type, 'active', u.email);
-                    results.push(`Updated ${u.email}`);
-                } else {
+                        .run(hash, u.type, 'active', email);
+                    results.push(`Updated: ${email} (ID: ${exists.id})`);
+                } else if (db) {
                     db.prepare('INSERT INTO users (email, password_hash, type, business_name, organization_name, status) VALUES (?, ?, ?, ?, ?, ?)')
-                        .run(u.email, hash, u.type, u.type === 'vendor' ? u.name : null, u.type === 'agency' ? u.name : null, 'active');
-                    results.push(`Created ${u.email}`);
+                        .run(email, hash, u.type, u.type === 'vendor' ? u.name : null, u.type === 'agency' ? u.name : null, 'active');
+                    results.push(`Created: ${email}`);
                 }
             }
 
+            const count = db ? db.prepare('SELECT COUNT(*) as count FROM users').get().count : 'N/A';
+            const allEmails = db ? db.prepare('SELECT email FROM users LIMIT 10').all().map(u => u.email).join(', ') : 'None';
+
             res.send(`
-                <h1>Emergency Sync Successful</h1>
-                <p>The following users have been created or updated in the production database:</p>
+                <h1 style="color: #005A8C;">Emergency Sync Tool v2</h1>
+                <p><strong>Database Path:</strong> ${dbFilePath}</p>
+                <p><strong>Operations performed:</strong></p>
                 <ul>${results.map(r => `<li>${r}</li>`).join('')}</ul>
-                <p><strong>Security Note:</strong> Please remove this code from server/index.js after verification.</p>
-                <p><a href="/login.html">Return to Login</a></p>
+                <hr>
+                <p><strong>System Status:</strong></p>
+                <ul>
+                    <li>Total Users in DB: ${count}</li>
+                    <li>Sample Emails Found: ${allEmails}</li>
+                </ul>
+                <p style="color: #D32F2F;"><strong>Security Note:</strong> Please remove this code from server/index.js after verification.</p>
+                <p><a href="/login.html" style="background: #005A8C; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Return to Login</a></p>
             `);
-        } catch (e) {
-            console.error('Emergency seed failed:', e);
-            res.status(500).send(`Emergency sync failed: ${e.message}`);
+        } catch (error) {
+            res.status(500).send(`<h1>Emergency sync failed</h1><p>${error.message}</p>`);
         }
     });
 
