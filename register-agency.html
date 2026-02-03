@@ -37,20 +37,20 @@
         </div>
     </header>
 
-    <main id="main-content">
-        <section class="container" style="padding: var(--space-4xl) var(--container-padding); max-width: 800px;">
-            <div class="text-center mb-2xl">
-                <h1 class="mb-md">Create Your Agency Account</h1>
-                <p class="text-muted">Register to post opportunities and connect with qualified vendors</p>
+    <main id="main-content" class="auth-page">
+        <div class="auth-container">
+            <div class="auth-header">
+                <h1>Create Your Agency Account</h1>
+                <p>Register to post opportunities and connect with qualified vendors</p>
             </div>
 
-            <div class="card">
-                <div class="card-body">
-                    <form id="agencyRegistrationForm" class="form">
-                        <!-- Organization Information -->
-                        <fieldset class="mb-2xl">
-                            <legend class="form-section-title">Organization Information</legend>
+            <div class="auth-card">
+                <form id="agencyRegistrationForm" class="form">
+                    <!-- Organization Information -->
+                    <fieldset class="mb-2xl">
+                        <legend class="form-section-title">Organization Information</legend>
 
+                        <div class="form-grid">
                             <div class="form-group">
                                 <label for="organizationType" class="form-label">Organization Type <span
                                         class="text-error">*</span></label>
@@ -61,13 +61,6 @@
                                     <option value="local-agency">Local Agency</option>
                                     <option value="prime-contractor">Prime Contractor</option>
                                 </select>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="organizationName" class="form-label">Organization Name <span
-                                        class="text-error">*</span></label>
-                                <input type="text" id="organizationName" name="organizationName" class="form-input"
-                                    required>
                             </div>
 
                             <div class="form-group" id="districtGroup" style="display: none;">
@@ -88,52 +81,59 @@
                                     <option value="d12">District 12 - Orange County</option>
                                 </select>
                             </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="organizationName" class="form-label">Organization Name <span
+                                    class="text-error">*</span></label>
+                            <input type="text" id="organizationName" name="organizationName" class="form-input"
+                                required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="address" class="form-label">Address <span class="text-error">*</span></label>
+                            <input type="text" id="address" name="address" class="form-input" required>
+                        </div>
+
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="city" class="form-label">City <span class="text-error">*</span></label>
+                                <input type="text" id="city" name="city" class="form-input" required>
+                            </div>
 
                             <div class="form-group">
-                                <label for="address" class="form-label">Address <span
+                                <label for="zipCode" class="form-label">ZIP Code <span
                                         class="text-error">*</span></label>
-                                <input type="text" id="address" name="address" class="form-input" required>
+                                <input type="text" id="zipCode" name="zipCode" class="form-input" required>
                             </div>
+                        </div>
 
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md);">
-                                <div class="form-group">
-                                    <label for="city" class="form-label">City <span class="text-error">*</span></label>
-                                    <input type="text" id="city" name="city" class="form-input" required>
-                                </div>
+                        <div class="form-group">
+                            <label for="phone" class="form-label">Phone Number <span class="text-error">*</span></label>
+                            <input type="tel" id="phone" name="phone" class="form-input" placeholder="(XXX) XXX-XXXX"
+                                required>
+                        </div>
+                    </fieldset>
 
-                                <div class="form-group">
-                                    <label for="zipCode" class="form-label">ZIP Code <span
-                                            class="text-error">*</span></label>
-                                    <input type="text" id="zipCode" name="zipCode" class="form-input" required>
-                                </div>
+                    <!-- Authorized Representative -->
+                    <fieldset class="mb-2xl">
+                        <legend class="form-section-title">Authorized Representative</legend>
+
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="firstName" class="form-label">First Name <span
+                                        class="text-error">*</span></label>
+                                <input type="text" id="firstName" name="firstName" class="form-input" required>
                             </div>
 
                             <div class="form-group">
-                                <label for="phone" class="form-label">Phone Number <span
+                                <label for="lastName" class="form-label">Last Name <span
                                         class="text-error">*</span></label>
-                                <input type="tel" id="phone" name="phone" class="form-input"
-                                    placeholder="(XXX) XXX-XXXX" required>
+                                <input type="text" id="lastName" name="lastName" class="form-input" required>
                             </div>
-                        </fieldset>
+                        </div>
 
-                        <!-- Authorized Representative -->
-                        <fieldset class="mb-2xl">
-                            <legend class="form-section-title">Authorized Representative</legend>
-
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md);">
-                                <div class="form-group">
-                                    <label for="firstName" class="form-label">First Name <span
-                                            class="text-error">*</span></label>
-                                    <input type="text" id="firstName" name="firstName" class="form-input" required>
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="lastName" class="form-label">Last Name <span
-                                            class="text-error">*</span></label>
-                                    <input type="text" id="lastName" name="lastName" class="form-input" required>
-                                </div>
-                            </div>
-
+                        <div class="form-grid">
                             <div class="form-group">
                                 <label for="title" class="form-label">Title/Position <span
                                         class="text-error">*</span></label>
@@ -145,25 +145,26 @@
                                         class="text-error">*</span></label>
                                 <input type="email" id="email" name="email" class="form-input" required>
                             </div>
+                        </div>
 
-                            <div class="form-group">
-                                <label for="contactPhone" class="form-label">Direct Phone Number <span
-                                        class="text-error">*</span></label>
-                                <input type="tel" id="contactPhone" name="contactPhone" class="form-input"
-                                    placeholder="(XXX) XXX-XXXX" required>
-                            </div>
-                        </fieldset>
+                        <div class="form-group">
+                            <label for="contactPhone" class="form-label">Direct Phone Number <span
+                                    class="text-error">*</span></label>
+                            <input type="tel" id="contactPhone" name="contactPhone" class="form-input"
+                                placeholder="(XXX) XXX-XXXX" required>
+                        </div>
+                    </fieldset>
 
-                        <!-- Account Security -->
-                        <fieldset class="mb-2xl">
-                            <legend class="form-section-title">Account Security</legend>
+                    <!-- Account Security -->
+                    <fieldset class="mb-2xl">
+                        <legend class="form-section-title">Account Security</legend>
 
+                        <div class="form-grid">
                             <div class="form-group">
                                 <label for="password" class="form-label">Password <span
                                         class="text-error">*</span></label>
                                 <input type="password" id="password" name="password" class="form-input" required>
-                                <small class="form-hint">Minimum 8 characters, including uppercase, lowercase, and
-                                    number</small>
+                                <small class="form-help">8+ chars, with upper, lower & number</small>
                             </div>
 
                             <div class="form-group">
@@ -172,31 +173,31 @@
                                 <input type="password" id="confirmPassword" name="confirmPassword" class="form-input"
                                     required>
                             </div>
-                        </fieldset>
-
-                        <!-- Terms -->
-                        <div class="form-group mb-lg">
-                            <label class="form-checkbox">
-                                <input type="checkbox" id="agreeTerms" name="agreeTerms" required>
-                                <span>I am authorized to create this account on behalf of my organization and agree to
-                                    the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a> <span
-                                        class="text-error">*</span></span>
-                            </label>
                         </div>
+                    </fieldset>
 
-                        <!-- Submit -->
-                        <div style="display: flex; gap: var(--space-md); justify-content: flex-end;">
-                            <a href="index.html" class="btn btn-outline">Cancel</a>
-                            <button type="submit" class="btn btn-secondary">Create Account</button>
-                        </div>
-                    </form>
-                </div>
+                    <!-- Terms -->
+                    <div class="form-group mb-lg">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="agreeTerms" name="agreeTerms" required>
+                            <span>I am authorized to create this account on behalf of my organization and agree to
+                                the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a> <span
+                                    class="text-error">*</span></span>
+                        </label>
+                    </div>
+
+                    <!-- Submit -->
+                    <div style="display: flex; gap: var(--space-md); justify-content: flex-end;">
+                        <a href="index.html" class="btn btn-outline">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Create Account</button>
+                    </div>
+                </form>
             </div>
 
-            <div class="text-center mt-lg">
-                <p>Already have an account? <a href="login.html">Log in</a></p>
+            <div class="auth-footer-links">
+                Already have an account? <a href="login.html">Log in here</a>
             </div>
-        </section>
+        </div>
     </main>
 
     <footer class="site-footer" role="contentinfo">

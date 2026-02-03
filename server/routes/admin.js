@@ -90,7 +90,7 @@ router.get('/users', requireAdmin, (req, res) => {
     }
 });
 
-// Update user status
+// Update user status (Legacy, keeping for compatibility but will be superseded by PUT /users/:id)
 router.put('/users/:id/status', requireAdmin, (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
@@ -104,6 +104,102 @@ router.put('/users/:id/status', requireAdmin, (req, res) => {
         }
 
         res.json({ id, status });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Create new user
+const bcrypt = require('bcryptjs');
+router.post('/users', requireAdmin, async (req, res) => {
+    const { email, password, type, business_name, organization_name, status } = req.body;
+
+    if (!email || !password || !type) {
+        return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    try {
+        const password_hash = await bcrypt.hash(password, 10);
+        const stmt = db.prepare(`
+            INSERT INTO users (email, password_hash, type, business_name, organization_name, status)
+            VALUES (?, ?, ?, ?, ?, ?)
+        `);
+        const result = stmt.run(email, password_hash, type, business_name || null, organization_name || null, status || 'active');
+
+        res.status(201).json({ id: result.lastInsertRowid, email, type });
+    } catch (error) {
+        if (error.message.includes('UNIQUE constraint failed')) {
+            return res.status(400).json({ error: 'Email already exists' });
+        }
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Get user by ID
+router.get('/users/:id', requireAdmin, (req, res) => {
+    const { id } = req.params;
+    try {
+        const user = db.prepare('SELECT * FROM users WHERE id = ?').get(id);
+        if (!user) return res.status(404).json({ error: 'User not found' });
+
+        const { password_hash, ...userWithoutPassword } = user;
+        res.json(userWithoutPassword);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Update user (Universal)
+router.put('/users/:id', requireAdmin, async (req, res) => {
+    const { id } = req.params;
+    const data = req.body;
+
+    try {
+        // Build dynamic update query
+        const allowedFields = ['business_name', 'organization_name', 'contact_name', 'phone', 'ein', 'status', 'type'];
+        const updates = [];
+        const params = [];
+
+        allowedFields.forEach(field => {
+            if (data[field] !== undefined) {
+                updates.push(`${field} = ?`);
+                params.push(data[field]);
+            }
+        });
+
+        if (data.password) {
+            const password_hash = await bcrypt.hash(data.password, 10);
+            updates.push('password_hash = ?');
+            params.push(password_hash);
+        }
+
+        if (updates.length === 0) {
+            return res.status(400).json({ error: 'No fields to update' });
+        }
+
+        params.push(id);
+        const stmt = db.prepare(`UPDATE users SET ${updates.join(', ')} WHERE id = ?`);
+        const result = stmt.run(...params);
+
+        if (result.changes === 0) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        res.json({ success: true, id });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Delete user
+router.delete('/users/:id', requireAdmin, (req, res) => {
+    const { id } = req.params;
+    try {
+        const result = db.prepare('DELETE FROM users WHERE id = ?').run(id);
+        if (result.changes === 0) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        res.json({ success: true });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

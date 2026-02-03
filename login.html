@@ -10,92 +10,6 @@
   <link rel="icon" href="assets/favicon.ico" type="image/x-icon">
   <link rel="stylesheet" href="css/design-system.css">
   <link rel="stylesheet" href="css/main.css">
-  <style>
-    .login-container {
-      min-height: calc(100vh - 200px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: var(--space-2xl) var(--container-padding);
-      background: radial-gradient(circle at top right, rgba(0, 57, 116, 0.05), transparent),
-        radial-gradient(circle at bottom left, rgba(255, 210, 0, 0.05), transparent);
-    }
-
-    .login-box {
-      background-color: var(--color-bg-primary);
-      border-radius: var(--border-radius-lg);
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-      padding: var(--space-2xl);
-      width: 100%;
-      max-width: 450px;
-      border: 1px solid var(--color-border-light);
-      backdrop-filter: blur(8px);
-    }
-
-    .login-header {
-      text-align: center;
-      margin-bottom: var(--space-xl);
-    }
-
-    .login-header h1 {
-      font-size: 1.75rem;
-      font-weight: 700;
-      margin-bottom: var(--space-xs);
-      color: var(--brand-blue);
-      font-family: 'Montserrat', Arial, sans-serif;
-    }
-
-    .login-header p {
-      font-family: 'Inter', Calibri, sans-serif;
-      font-size: 0.9375rem;
-    }
-
-    .login-divider {
-      text-align: center;
-      margin: var(--space-xl) 0;
-      position: relative;
-    }
-
-    .login-divider::before {
-      content: "";
-      position: absolute;
-      top: 50%;
-      left: 0;
-      right: 0;
-      height: 1px;
-      background-color: var(--color-border-light);
-    }
-
-    .login-divider span {
-      background-color: var(--color-bg-primary);
-      padding: 0 var(--space-md);
-      position: relative;
-      color: var(--text-muted);
-      font-size: 0.8125rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    .register-links {
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-sm);
-      align-items: center;
-      /* Center the buttons */
-    }
-
-    .register-links .btn {
-      width: 100%;
-      /* Make them fit the box width properly */
-      justify-content: center;
-    }
-
-    @media (max-width: 480px) {
-      .login-box {
-        padding: var(--space-xl);
-      }
-    }
-  </style>
 </head>
 
 <body>
@@ -123,26 +37,25 @@
     </div>
   </header>
 
-  <main id="main-content">
-    <div class="login-container">
-      <div class="login-box">
-        <div class="login-header">
-          <h1>Log In to Your Account</h1>
-          <p class="text-muted">Access your dashboard and manage your opportunities</p>
-        </div>
+  <main id="main-content" class="auth-page">
+    <div class="auth-container" style="max-width: 500px;">
+      <div class="auth-header">
+        <h1>Log In</h1>
+        <p>Access your CaltransBizConnect dashboard</p>
+      </div>
 
+      <div class="auth-card">
         <form id="loginForm" novalidate>
           <div class="form-group">
             <label for="email" class="required">Email Address</label>
-            <input type="email" id="email" name="email" required autocomplete="email" aria-describedby="email-help">
-            <span id="email-help" class="form-help">Enter the email address associated with your
-              account</span>
+            <input type="email" id="email" name="email" class="form-input" required autocomplete="email">
             <span class="form-error" role="alert"></span>
           </div>
 
           <div class="form-group">
             <label for="password" class="required">Password</label>
-            <input type="password" id="password" name="password" required autocomplete="current-password">
+            <input type="password" id="password" name="password" class="form-input" required
+              autocomplete="current-password">
             <span class="form-error" role="alert"></span>
           </div>
 
@@ -150,22 +63,23 @@
             <div style="display: flex; justify-content: space-between; align-items: center;">
               <label class="checkbox-label">
                 <input type="checkbox" name="remember" id="remember">
-                Remember me
+                <span>Remember me</span>
               </label>
-              <a href="forgot-password.html" class="text-sm">Forgot your password?</a>
+              <a href="forgot-password.html" style="font-size: var(--font-size-sm); color: var(--color-primary);">Forgot
+                password?</a>
             </div>
           </div>
 
           <button type="submit" class="btn btn-primary" style="width: 100%;">Log In</button>
         </form>
 
-        <div class="login-divider">
+        <div class="auth-divider">
           <span>New to CaltransBizConnect?</span>
         </div>
 
-        <div class="register-links">
-          <a href="register-vendor.html" class="btn btn-outline">Register as Vendor</a>
-          <a href="register-agency.html" class="btn btn-outline">Register as Agency</a>
+        <div style="display: flex; flex-direction: column; gap: var(--space-md);">
+          <a href="register-vendor.html" class="btn btn-outline" style="width: 100%;">Register as Vendor</a>
+          <a href="register-agency.html" class="btn btn-outline" style="width: 100%;">Register as Agency</a>
         </div>
       </div>
     </div>
