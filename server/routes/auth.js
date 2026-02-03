@@ -52,7 +52,8 @@ router.post('/register', async (req, res) => {
 
 // Login user
 router.post('/login', async (req, res) => {
-    const { email, password } = req.body;
+    const email = req.body.email ? req.body.email.trim().toLowerCase() : '';
+    const { password } = req.body;
     console.log(`CaltransBizConnect Auth: Login attempt for ${email}`);
 
     try {
