@@ -105,65 +105,45 @@ try {
         limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
     });
 
-    // Health Checks
-    app.get('/api/health', (req, res) => {
-        const { getDb, lastError } = require('./database');
+    // --- ROUTE HANDLERS ---
+
+    // 1. Health check handler
+    const healthHandler = (req, res) => {
+        const { getDb } = require('./database');
         let dbStatus = 'ok';
         let detail = null;
         try { getDb(); } catch (e) { dbStatus = 'error'; detail = e.message; }
 
-        res.json({
-            status: 'ok',
-            database: { status: dbStatus, detail: detail },
-            uptime: process.uptime(),
-            timestamp: new Date().toISOString(),
-            env: {
-                node: process.version,
-                platform: process.platform,
-                arch: process.arch,
-                passenger: !!(process.env.PHUSION_PASSENGER || process.env.PASSENGER_NODE_CONTROL_REPO)
-            }
-        });
-    });
+        // If JSON is requested (like from health API)
+        if (req.path.includes('/api/health')) {
+            return res.json({
+                status: 'ok',
+                database: { status: dbStatus, detail: detail },
+                uptime: process.uptime(),
+                timestamp: new Date().toISOString(),
+                env: {
+                    node: process.version,
+                    passenger: !!(process.env.PHUSION_PASSENGER || process.env.PASSENGER_NODE_CONTROL_REPO)
+                }
+            });
+        }
 
-    app.get('/health', (req, res) => {
-        const { getDb } = require('./database');
-        let dbInfo = 'Database: Connected';
-        try { getDb(); } catch (e) { dbInfo = `Database Error: ${e.message}`; }
-
+        // Default HTML response
         res.send(`
-            <h1>CaltransBizConnect Health</h1>
-            <p><strong>Status:</strong> Running</p>
-            <p><strong>${dbInfo}</strong></p>
-            <hr>
-            <p>Time: ${new Date().toISOString()}</p>
+            <div style="font-family: sans-serif; padding: 20px; line-height: 1.6;">
+                <h1 style="color: #005A8C;">CaltransBizConnect Health (v2.0.6)</h1>
+                <p><strong>Status:</strong> Running</p>
+                <p><strong>URL Path:</strong> ${req.path}</p>
+                <p style="color: ${dbStatus === 'ok' ? 'green' : 'red'};"><strong>Database: ${dbStatus === 'ok' ? 'Connected' : 'Error: ' + detail}</strong></p>
+                <hr>
+                <p>Time: ${new Date().toISOString()}</p>
+                <p><small>Debug Info: Running in ${process.env.NODE_ENV || 'production'} mode</small></p>
+            </div>
         `);
-    });
-
-    // Auth & Core Routes
-    console.log('CaltransBizConnect: Loading routes...');
-    app.use('/api/auth', require('./routes/auth'));
-    app.use('/api/opportunities', require('./routes/opportunities'));
-
-    // Specific Feature Routes
-    const safeRequire = (routePath) => {
-        try { return require(routePath); }
-        catch (e) { console.warn(`CaltransBizConnect: Optional route ${routePath} not found.`); return null; }
     };
 
-    const adminRoutes = safeRequire('./routes/admin');
-    if (adminRoutes) app.use('/api/admin', adminRoutes);
-
-    const appRoutes = safeRequire('./routes/applications');
-    if (appRoutes) app.use('/api/applications', appRoutes);
-
-    app.use('/api/users', require('./routes/users'));
-    app.use('/api/vendors', require('./routes/users'));
-    app.use('/api/messages', require('./routes/messages'));
-
-    // EMERGENCY SEED ENDPOINT - Allows user to fix production DB without terminal access
-    // This can be triggered by visiting https://caltransbizconnect.org/api/emergency-seed-sync
-    app.get('/api/emergency-seed-sync', async (req, res) => {
+    // 2. Emergency Sync Handler
+    const syncHandler = async (req, res) => {
         try {
             const { db } = require('./database');
             const bcrypt = require('bcryptjs');
@@ -196,23 +176,59 @@ try {
             const allEmails = db ? db.prepare('SELECT email FROM users LIMIT 10').all().map(u => u.email).join(', ') : 'None';
 
             res.send(`
-                <h1 style="color: #005A8C;">Emergency Sync Tool v3 (Fresh Start)</h1>
-                <p><strong>Database Path:</strong> ${dbFilePath}</p>
-                <p><strong>Operations performed:</strong></p>
-                <ul>${results.map(r => `<li>${r}</li>`).join('')}</ul>
-                <hr>
-                <p><strong>System Status:</strong></p>
-                <ul>
-                    <li>Total Users in DB: ${count}</li>
-                    <li>Sample Emails Found: ${allEmails}</li>
-                </ul>
-                <p style="color: #D32F2F;"><strong>Security Note:</strong> Please remove this code from server/index.js after verification.</p>
-                <p><a href="/login.html" style="background: #005A8C; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Return to Login</a></p>
+                <div style="font-family: sans-serif; padding: 20px;">
+                    <h1 style="color: #005A8C;">Emergency Sync Tool v3 (Fresh Start)</h1>
+                    <p><strong>Database Path:</strong> ${dbFilePath}</p>
+                    <p><strong>Operations performed:</strong></p>
+                    <ul>${results.map(r => `<li>${r}</li>`).join('')}</ul>
+                    <hr>
+                    <p><strong>System Status:</strong></p>
+                    <ul>
+                        <li>Total Users in DB: ${count}</li>
+                        <li>Sample Emails Found: ${allEmails}</li>
+                    </ul>
+                    <p style="color: #D32F2F;"><strong>Security Note:</strong> Please remove this code from server/index.js after verification.</p>
+                    <p><a href="/login.html" style="background: #005A8C; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Return to Login</a></p>
+                </div>
             `);
         } catch (error) {
             res.status(500).send(`<h1>Emergency sync failed</h1><p>${error.message}</p>`);
         }
-    });
+    };
+
+    // --- APPLY ROUTES ---
+
+    // 1. Health Check (Dual-Route)
+    app.get('/api/health', healthHandler);
+    app.get('/health', healthHandler);
+
+    // 2. Emergency Sync (Dual-Route)
+    app.get('/api/emergency-seed-sync', syncHandler);
+    app.get('/emergency-seed-sync', syncHandler);
+
+    // 3. Feature Routes (Dual-Route)
+    const setupRoutes = (prefix = '') => {
+        const p = prefix ? `/${prefix}` : '';
+        app.use(`${p}/auth`, require('./routes/auth'));
+        app.use(`${p}/opportunities`, require('./routes/opportunities'));
+        app.use(`${p}/users`, require('./routes/users'));
+        app.use(`${p}/vendors`, require('./routes/users'));
+        app.use(`${p}/messages`, require('./routes/messages'));
+
+        const safeRequire = (routePath) => {
+            try { return require(routePath); }
+            catch (e) { return null; }
+        };
+
+        const adminRoutes = safeRequire('./routes/admin');
+        if (adminRoutes) app.use(`${p}/admin`, adminRoutes);
+
+        const appOpsRoutes = safeRequire('./routes/applications');
+        if (appOpsRoutes) app.use(`${p}/applications`, appOpsRoutes);
+    };
+
+    setupRoutes('api'); // Handles /api/*
+    setupRoutes('');    // Handles /* (fallback if prefix stripped)
 
     // File Upload Route
     app.post('/api/upload-cs', upload.single('file'), (req, res) => {
