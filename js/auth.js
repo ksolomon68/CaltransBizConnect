@@ -76,7 +76,10 @@ async function login(email, password) {
         const data = await safeParseJson(response);
 
         if (!response.ok) {
-            throw new Error(data.error || `Server Error (${response.status}): Could not complete login.`);
+            let errorMsg = data.error || `Server Error (${response.status})`;
+            if (data.details) errorMsg += `: ${data.details}`;
+            if (data.hint) errorMsg += `\n\nHint: ${data.hint}`;
+            throw new Error(errorMsg);
         }
 
         localStorage.setItem('caltrans_user', JSON.stringify(data));

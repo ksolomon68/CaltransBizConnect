@@ -95,14 +95,39 @@ try {
     });
 
     // Health Checks
-    app.get('/api/health', (req, res) => res.json({
-        status: 'ok',
-        uptime: process.uptime(),
-        timestamp: new Date().toISOString(),
-        env: process.env.NODE_ENV || 'production'
-    }));
+    app.get('/api/health', (req, res) => {
+        const { getDb, lastError } = require('./database');
+        let dbStatus = 'ok';
+        let detail = null;
+        try { getDb(); } catch (e) { dbStatus = 'error'; detail = e.message; }
 
-    app.get('/health', (req, res) => res.send('OK - CaltransBizConnect is running'));
+        res.json({
+            status: 'ok',
+            database: { status: dbStatus, detail: detail },
+            uptime: process.uptime(),
+            timestamp: new Date().toISOString(),
+            env: {
+                node: process.version,
+                platform: process.platform,
+                arch: process.arch,
+                passenger: !!(process.env.PHUSION_PASSENGER || process.env.PASSENGER_NODE_CONTROL_REPO)
+            }
+        });
+    });
+
+    app.get('/health', (req, res) => {
+        const { getDb } = require('./database');
+        let dbInfo = 'Database: Connected';
+        try { getDb(); } catch (e) { dbInfo = `Database Error: ${e.message}`; }
+
+        res.send(`
+            <h1>CaltransBizConnect Health</h1>
+            <p><strong>Status:</strong> Running</p>
+            <p><strong>${dbInfo}</strong></p>
+            <hr>
+            <p>Time: ${new Date().toISOString()}</p>
+        `);
+    });
 
     // Auth & Core Routes
     console.log('CaltransBizConnect: Loading routes...');
