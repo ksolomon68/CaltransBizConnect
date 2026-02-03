@@ -7,6 +7,7 @@
     "start": "node server/index.js",
     "dev": "node server/index.js",
     "build": "echo 'No build step required - server handles its own dependencies'",
+    "seed": "node seed_users.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
